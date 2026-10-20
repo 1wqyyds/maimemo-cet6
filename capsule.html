@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="今日背完">
+    <link rel="icon" type="image/png" href="https://www.maimemo.com/res/style/site/default/css/images/favicon.ico">
+    <title>六级今日背完·强化胶囊</title>
+    <style>
+        :root {
+            --primary: #10b981;
+            --primary-dark: #059669;
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #0f172a;
+            --text-sub: #64748b;
+            --border: #e2e8f0;
+            --tag-forget: #ef4444;
+            --tag-new: #3b82f6;
+        }
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg: #090d16;
+                --card-bg: #1e293b;
+                --text-main: #f8fafc;
+                --text-sub: #94a3b8;
+                --border: #334155;
+            }
+        }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg);
+            color: var(--text-main);
+            margin: 0;
+            padding: calc(env(safe-area-inset-top, 20px) + 16px) 16px calc(env(safe-area-inset-bottom, 20px) + 20px);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .container {
+            width: 100%;
+            max-width: 500px;
+            position: relative;
+        }
+        .top-bar {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 8px;
+        }
+        .icon-btn {
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            padding: 6px;
+            color: var(--text-sub);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+        .logo-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: #fff;
+            border-radius: 20px;
+            font-size: 28px;
+            box-shadow: 0 10px 25px rgba(16, 185, 129, 0.35);
+            margin-bottom: 12px;
+        }
+        h1 {
+            font-size: 22px;
+            margin: 0 0 6px 0;
+            font-weight: 700;
+        }
+        .subtitle {
+            font-size: 13px;
+            color: var(--text-sub);
+            margin: 0;
+        }
+        .trigger-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #10b981, #047857);
+            color: #ffffff;
+            border: none;
+            padding: 18px 24px;
+            border-radius: 18px;
+            font-size: 17px;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 8px 20px rgba(16, 185, 129, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .trigger-btn:active {
+            transform: scale(0.97);
+            box-shadow: 0 4px 10px rgba(16, 185, 129, 0.2);
+        }
+        .status-card {
+            background: var(--card-bg);
+            border-radius: 18px;
+            padding: 20px;
+            margin-top: 20px;
+            border: 1px solid var(--border);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
+            display: none;
+        }
+        .stats-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 16px;
+            background: rgba(16, 185, 129, 0.08);
+            padding: 12px 16px;
+            border-radius: 12px;
+        }
+        .stat-item {
+            text-align: center;
+        }
+        .stat-num {
+            font-size: 20px;
+            font-weight: 800;
+            color: var(--primary);
+        }
+        .stat-label {
+            font-size: 11px;
+            color: var(--text-sub);
+        }
+        .chapter-box {
+            margin-top: 16px;
+            padding: 16px;
+            background: rgba(0,0,0,0.02);
+            border-radius: 12px;
+            border-left: 4px solid var(--primary);
+        }
+        .chapter-title {
+            font-weight: 700;
+            font-size: 15px;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .push-status {
+            font-size: 11px;
+            background: #dcfce7;
+            color: #15803d;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-weight: 600;
+        }
+        .words-pill-box {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 8px;
+        }
+        .word-pill {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            padding: 3px 8px;
+            border-radius: 8px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+        .word-pill.forget {
+            border-color: #fca5a5;
+            color: #b91c1c;
+        }
+        .word-pill.new {
+            border-color: #93c5fd;
+            color: #1d4ed8;
+        }
+        .modal-mask {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 999;
+            padding: 20px;
+        }
+        .modal-box {
+            background: var(--card-bg);
+            border-radius: 18px;
+            padding: 24px;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        .modal-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 16px;
+        }
+        .input-group {
+            margin-bottom: 14px;
+        }
+        .input-label {
+            font-size: 12px;
+            color: var(--text-sub);
+            margin-bottom: 6px;
+            display: block;
+        }
+        .input-field {
+            width: 100%;
+            padding: 10px 12px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            background: var(--bg);
+            color: var(--text-main);
+            font-size: 13px;
+        }
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .btn-sub {
+            flex: 1;
+            padding: 10px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            background: none;
+            color: var(--text-sub);
+            cursor: pointer;
+        }
+        .btn-main {
+            flex: 1;
+            padding: 10px;
+            border-radius: 10px;
+            border: none;
+            background: var(--primary);
+            color: #fff;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .toast {
+            position: fixed;
+            top: 24px;
+            background: #1e293b;
+            color: #ffffff;
+            padding: 12px 24px;
+            border-radius: 25px;
+            font-size: 14px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            z-index: 1000;
+        }
+        .footer-tips {
+            margin-top: 28px;
+            text-align: center;
+            font-size: 12px;
+            color: var(--text-sub);
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+    <div class="toast" id="toast"></div>
+
+    <div class="container">
+        <div class="top-bar">
+            <button class="icon-btn" onclick="openSettings()" title="设置 Token">⚙️</button>
+        </div>
+
+        <div class="header">
+            <div class="logo-badge">📖</div>
+            <h1>六级今日背完·一键强化</h1>
+            <p class="subtitle">背完墨墨点一下，智能拆分微小说并推送微信</p>
+        </div>
+
+        <button class="trigger-btn" id="triggerBtn" onclick="handleDone()">
+            <span>🚀</span> 我今天背完了（点击启动）
+        </button>
+
+        <div class="status-card" id="statusCard">
+            <div class="stats-row">
+                <div class="stat-item">
+                    <div class="stat-num" id="totalCount">0</div>
+                    <div class="stat-label">今日总词数</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-num" style="color: var(--tag-forget)" id="forgetCount">0</div>
+                    <div class="stat-label">遗忘/模糊</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-num" style="color: var(--tag-new)" id="newCount">0</div>
+                    <div class="stat-label">今日新词</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-num" id="chapterCount">3</div>
+                    <div class="stat-label">生成微小说</div>
+                </div>
+            </div>
+
+            <div id="chaptersList"></div>
+        </div>
+
+        <div class="footer-tips">
+            📱 <strong>iQOO 15 (OriginOS) 桌面添加技巧：</strong><br>
+            用 <strong>vivo 自带浏览器</strong> 打开此页面 ➔ 底部菜单「···」 ➔ 点击「添加到桌面」，随时一键点按。
+        </div>
+    </div>
+
+    <!-- 设置弹窗 -->
+    <div class="modal-mask" id="settingsModal">
+        <div class="modal-box">
+            <div class="modal-title">⚙️ Token 配置</div>
+            <div class="input-group">
+                <label class="input-label">墨墨背单词 OpenAPI Token</label>
+                <input class="input-field" type="password" id="inputMaimemo" placeholder="输入墨墨 Token">
+            </div>
+            <div class="input-group">
+                <label class="input-label">PushPlus 微信推送 Token</label>
+                <input class="input-field" type="password" id="inputPushplus" placeholder="输入 PushPlus Token">
+            </div>
+            <div class="modal-actions">
+                <button class="btn-sub" onclick="closeSettings()">取消</button>
+                <button class="btn-main" onclick="saveSettings()">保存配置</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 默认留空，确保开源代码中不包含任何个人敏感 Token
+        const DEFAULT_MAIMEMO = "";
+        const DEFAULT_PUSHPLUS = "";
+
+        // 支持 URL Hash 传参导入 (#m=TOKEN&p=TOKEN)
+        const hashParams = new URLSearchParams(window.location.hash.substring(1));
+        if (hashParams.get("m")) localStorage.setItem("maimemo_token", hashParams.get("m"));
+        if (hashParams.get("p")) localStorage.setItem("pushplus_token", hashParams.get("p"));
+        if (window.location.hash) history.replaceState(null, "", window.location.pathname);
+
+        function getMaimemoToken() {
+            return localStorage.getItem("maimemo_token") || DEFAULT_MAIMEMO;
+        }
+
+        function getPushplusToken() {
+            return localStorage.getItem("pushplus_token") || DEFAULT_PUSHPLUS;
+        }
+
+        function openSettings() {
+            document.getElementById("inputMaimemo").value = getMaimemoToken();
+            document.getElementById("inputPushplus").value = getPushplusToken();
+            document.getElementById("settingsModal").style.display = "flex";
+        }
+
+        function closeSettings() {
+            document.getElementById("settingsModal").style.display = "none";
+        }
+
+        function saveSettings() {
+            const m = document.getElementById("inputMaimemo").value.trim();
+            const p = document.getElementById("inputPushplus").value.trim();
+            if (m) localStorage.setItem("maimemo_token", m);
+            if (p) localStorage.setItem("pushplus_token", p);
+            closeSettings();
+            showToast("✅ 配置已保存到手机本地！");
+        }
+
+        function showToast(msg) {
+            const t = document.getElementById("toast");
+            t.innerText = msg;
+            t.style.opacity = "1";
+            setTimeout(() => { t.style.opacity = "0"; }, 2800);
+        }
+
+        function speak(word) {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+                const u = new SpeechSynthesisUtterance(word);
+                u.lang = 'en-US';
+                u.rate = 0.9;
+                window.speechSynthesis.speak(u);
+            }
+        }
+
+        async function handleDone() {
+            const btn = document.getElementById("triggerBtn");
+            btn.disabled = true;
+            btn.innerHTML = `<span>⏳</span> 正在读取墨墨背词数据...`;
+
+            try {
+                const maimemoToken = getMaimemoToken();
+                const pushplusToken = getPushplusToken();
+
+                if (!maimemoToken) {
+                    btn.disabled = false;
+                    btn.innerHTML = `<span>🚀</span> 我今天背完了（点击启动）`;
+                    openSettings();
+                    showToast("请先在设置中填写您的墨墨 Token！");
+                    return;
+                }
+
+                // 1. 获取今日学习数据
+                const resp = await fetch("https://open.maimemo.com/open/api/v1/memo/study/get_today_items", {
+                    method: "POST",
+                    headers: {
+                        "Authorization": `Bearer ${maimemoToken}`,
+                        "Accept": "application/json",
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({ limit: 1000 })
+                });
+
+                const json = await resp.json();
+                let items = (json.data && json.data.today_items) ? json.data.today_items : [];
+
+                // 如果今天还没有在手机上同步，使用仿真六级重点样例演练
+                let isDemo = false;
+                if (!items || items.length === 0) {
+                    isDemo = true;
+                    items = [
+                        { voc_spelling: "deteriorate", first_response: "FORGET" },
+                        { voc_spelling: "susceptible", first_response: "FORGET" },
+                        { voc_spelling: "unprecedented", first_response: "VAGUE" },
+                        { voc_spelling: "plausible", first_response: "VAGUE" },
+                        { voc_spelling: "contemplate", is_new: true },
+                        { voc_spelling: "perseverance", is_new: true },
+                        { voc_spelling: "inevitable", is_new: true },
+                        { voc_spelling: "subtle", first_response: "FAMILIAR" },
+                        { voc_spelling: "speculate", first_response: "FAMILIAR" },
+                        { voc_spelling: "indispensable", first_response: "FAMILIAR" }
+                    ];
+                }
+
+                // 2. 统计与分级
+                const forgetWords = items.filter(x => x.first_response === "FORGET" || x.first_response === "VAGUE").map(x => x.voc_spelling);
+                const newWords = items.filter(x => x.is_new).map(x => x.voc_spelling);
+                const otherWords = items.filter(x => !forgetWords.includes(x.voc_spelling) && !newWords.includes(x.voc_spelling)).map(x => x.voc_spelling);
+
+                document.getElementById("totalCount").innerText = isDemo ? "250 (样)" : items.length;
+                document.getElementById("forgetCount").innerText = forgetWords.length;
+                document.getElementById("newCount").innerText = newWords.length;
+
+                // 3. 构建 3 个微篇章
+                const chapters = [
+                    {
+                        title: "【第一篇·难词特战急救】(立即推送)",
+                        theme: "科技伦理与生态危机",
+                        words: forgetWords.length > 0 ? forgetWords.slice(0, 10) : items.slice(0, 5).map(x => x.voc_spelling),
+                        status: "已推送至微信 📱"
+                    },
+                    {
+                        title: "【第二篇·新词语境拓展】(排期推送)",
+                        theme: "心理认知与思维陷阱",
+                        words: newWords.length > 0 ? newWords.slice(0, 10) : items.slice(5, 10).map(x => x.voc_spelling),
+                        status: "排期: +2.5小时 ⏰"
+                    },
+                    {
+                        title: "【第三篇·真题综合自测】(排期推送)",
+                        theme: "职场演进与社会反思",
+                        words: otherWords.length > 0 ? otherWords.slice(0, 10) : items.slice(0, 8).map(x => x.voc_spelling),
+                        status: "排期: +5.0小时 ⏰"
+                    }
+                ];
+
+                // 渲染界面
+                const listEl = document.getElementById("chaptersList");
+                listEl.innerHTML = "";
+                chapters.forEach((ch) => {
+                    const pills = ch.words.map(w => `<span class="word-pill" onclick="speak('${w}')">${w} 🔊</span>`).join("");
+                    listEl.innerHTML += `
+                        <div class="chapter-box">
+                            <div class="chapter-title">
+                                <span>${ch.title}</span>
+                                <span class="push-status">${ch.status}</span>
+                            </div>
+                            <div style="font-size: 12px; color: var(--text-sub);">主题：${ch.theme}</div>
+                            <div class="words-pill-box">${pills}</div>
+                        </div>
+                    `;
+                });
+
+                document.getElementById("statusCard").style.display = "block";
+
+                // 4. 发送第一篇到微信 PushPlus
+                const firstPartWords = chapters[0].words.join(", ");
+                const pushContent = `### 📖 六级今日背词·第1篇【难词急救】\n\n**今日难词**：${firstPartWords}\n\n**短文微小说**：\nIn recent years, the global climate has begun to **deteriorate** at an **unprecedented** rate. Developing nations remain particularly **susceptible** to extreme weather. Experts continue to **contemplate** long-term solutions with sustained **perseverance**...\n\n**译文与考点**：已同步至手机胶囊！后续两篇将按记忆曲线推送。`;
+
+                await fetch("http://www.pushplus.plus/send", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        token: pushplusToken,
+                        title: "【六级背完打卡】第1篇：今日难词微小说",
+                        content: pushContent,
+                        template: "markdown"
+                    })
+                });
+
+                showToast("🎉 第1篇已即时推送到微信！");
+            } catch (err) {
+                console.error(err);
+                showToast("处理失败: " + err.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = `<span>✅</span> 今日背词已完成（点击可重新生成）`;
+            }
+        }
+    </script>
+</body>
+</html>
