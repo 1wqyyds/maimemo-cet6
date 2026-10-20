@@ -493,18 +493,26 @@
                 const firstPartWords = chapters[0].words.join(", ");
                 const pushContent = `### 📖 六级今日背词·第1篇【难词急救】\n\n**今日难词**：${firstPartWords}\n\n**短文微小说**：\nIn recent years, the global climate has begun to **deteriorate** at an **unprecedented** rate. Developing nations remain particularly **susceptible** to extreme weather. Experts continue to **contemplate** long-term solutions with sustained **perseverance**...\n\n**译文与考点**：已同步至手机胶囊！后续两篇将按记忆曲线推送。`;
 
-                await fetch("http://www.pushplus.plus/send", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        token: pushplusToken,
-                        title: "【六级背完打卡】第1篇：今日难词微小说",
-                        content: pushContent,
-                        template: "markdown"
-                    })
-                });
-
-                showToast("🎉 第1篇已即时推送到微信！");
+                if (pushplusToken) {
+                    const pushResp = await fetch("https://www.pushplus.plus/send", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            token: pushplusToken,
+                            title: "【六级背完打卡】第1篇：今日难词微小说",
+                            content: pushContent,
+                            template: "markdown"
+                        })
+                    });
+                    const pushJson = await pushResp.json();
+                    if (pushJson.code === 200) {
+                        showToast("🎉 第1篇已即时推送到微信！");
+                    } else {
+                        showToast("微信推送失败: " + (pushJson.msg || "令牌无效"));
+                    }
+                } else {
+                    showToast("已生成短文（未配置微信推送 Token）");
+                }
             } catch (err) {
                 console.error(err);
                 showToast("处理失败: " + err.message);

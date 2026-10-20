@@ -1,0 +1,29 @@
+name: 六级今日背完·微信推送微小说
+
+on:
+  workflow_dispatch: # 支持在手机 GitHub 上随时一键手动触发
+  schedule:
+    - cron: '30 14 * * *' # 每天北京时间 22:30 自动静默运行一次
+
+jobs:
+  run-booster:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 设置 Python 环境
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: 安装依赖
+        run: |
+          pip install requests python-dotenv
+
+      - name: 抓取今日单词并推送微信
+        env:
+          MAIMEMO_TOKEN: ${{ secrets.MAIMEMO_TOKEN }}
+          PUSHPLUS_TOKEN: ${{ secrets.PUSHPLUS_TOKEN }}
+        run: |
+          python cet6_story.py --push

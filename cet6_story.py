@@ -261,7 +261,7 @@ def push_to_wechat(title: str, content: str, token: Optional[str] = None) -> boo
         print("[!] 未配置 PUSHPLUS_TOKEN，跳过微信推送。")
         return False
 
-    url = "http://www.pushplus.plus/send"
+    url = "https://www.pushplus.plus/send"
     payload = {
         "token": token,
         "title": title,
